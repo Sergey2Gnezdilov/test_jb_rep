@@ -1,36 +1,105 @@
 GitHub open-source data schema:
 
-This data schema is designed to efficiently capture and organize GitHub's open-source 
-repository data through seven main interconnected entities: repositories, repository languages, commits, contributors,
- issues and pull requests, releases, and repository files with content. 
 
-This hierarchical schema was chosen because it mirrors GitHub's natural data structure while maintaining
- clear relationships between entities through references (like repository_id and commit_id),
- which enables efficient querying and analysis of the entire codebase ecosystem.
-Can be realised in a data warehouse as snowflake.
+Overview of the Data Model
 
-The repository_files entity captures detailed information about each file, including its language and size,
- enabling analysis of programming language trends and codebase composition across different projects.
-Files are the source for forming the datasetы. 
+1. Purpose:
 
-This  schema supports temporal analysis through comprehensive timestamp 
-tracking across multiple entities (created_at, updated_at, pushed_at), allowing researchers
- to study project development patterns and community engagement over time.
+The schema efficiently models GitHub's open-source repository data for analysis.
 
-The schema's design facilitates common analytical queries about project health, 
-community engagement, and development patterns, but it may not fully address real-time collaboration 
-features or complex code dependency relationships between repositories.
+It supports studying project health, community engagement, and development patterns.
 
-The inclusion of licensing information and visibility flags helps researchers understand open-source 
-licensing patterns and project accessibility, though it doesn't capture the full 
-complexity of license compliance and dependencies.
 
-The schema's modular design allows for future extensions to accommodate new GitHub 
-features or additional metadata, while maintaining backward compatibility with existing data and analysis workflows.
+2. Structure:
 
-For privacy and security considerations, the schema implements anonymization for user-related data 
-(anonymized_author_id, anonymized_username) while still maintaining the ability to track 
-individual contributions and participation patterns.
+The schema consists of seven main interconnected entities: repositories, repository languages, commits, contributors, issues and pull requests, releases, and repository files.
+
+Relationships between entities are maintained via references (e.g., repository_id, commit_id).
+
+
+3. Features:
+
+Supports temporal analysis with timestamps for tracking creation, updates, and pushes.
+
+Includes licensing information and metadata flags for accessibility and usage analysis.
+
+Ensures privacy through anonymization of user-related data.
+
+
+
+4. Modularity:
+
+Designed to accommodate future GitHub features or metadata while maintaining backward compatibility.
+
+
+
+5. Limitations:
+
+Does not fully address real-time collaboration or complex code dependency relationships. This point for next optimisation in DWH (golden layer) as relationship/code part modeling.
+
+Licensing and dependency management are simplified.
+
+
+
+
+Entity Details
+
+1. Repositories:
+
+Attributes include repository ID, name, organization, description, and key dates.
+
+Tracks metrics like stargazers, watchers, forks, and open issues.
+
+
+2. Repository Languages:
+
+Captures language composition and usage metrics.
+
+
+3. Commits:
+
+Tracks commit IDs, authors, timestamps, and change metrics (additions, deletions, changes).
+
+
+4. Contributors:
+
+Includes anonymized user details and contribution metrics.
+
+
+5. Issues and Pull Requests:
+
+Identifies issues and pull requests with states, timestamps, and user references.
+
+
+6. Releases:
+
+Includes details like release IDs, tags, flags (draft, prerelease), and notes.
+
+
+7. Repository Files:
+
+Tracks file metadata, including size, language, and last modified timestamps.
+
+
+Analytical and Practical Applications
+
+Analytical Queries:
+
+Focus on project trends, engagement patterns, and codebase composition.
+
+Realization:
+
+Can be implemented as a snowflake schema in a data warehouse for efficient querying.
+
+Futhure Improvement
+
+Consider extending support for real-time collaboration and detailed dependency tracking.
+
+Enhance licensing and compliance features for a broader analytical scope.
+
+
+This schema is well-structured for analyzing GitHub's open-source ecosystem, offering scalability and flexibility for evolving researching.
+
 
 
 github_open_source_schema:
@@ -125,4 +194,12 @@ github_open_source_schema:
       - extension: file extension
       - size_bytes: file size
       - language_detected: programming/markup language
-      - last_modified: timestamp      
+      - last_modified: timestamp  
+
+
+/////////////
+Возможно. 
+- в реальной прод модели если задача собирать код, обновлять код, и использовать для обучения моделей, нужно избежать лишних полей, не имеющих ценности. 
+насколько я понимаю, используется парсинг через API. Для этого собирается/обновляется список репозиториев с Kotlin, к примеру. И включается парсинг всех структур кода. 
+После анализа структуры репозитория и кода, можно построить логическую модель в каждом репо (бранче), что такая та фича описана такими то файлами. 
+Возможно - возможно для autocomplete кода это не актуально. Но для обучения, Finetune, моделей пишующих код по функциональному описанию это будет улючевым моментом. 
