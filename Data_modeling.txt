@@ -1,0 +1,128 @@
+GitHub open-source data schema:
+
+This data schema is designed to efficiently capture and organize GitHub's open-source 
+repository data through seven main interconnected entities: repositories, repository languages, commits, contributors,
+ issues and pull requests, releases, and repository files with content. 
+
+This hierarchical schema was chosen because it mirrors GitHub's natural data structure while maintaining
+ clear relationships between entities through references (like repository_id and commit_id),
+ which enables efficient querying and analysis of the entire codebase ecosystem.
+Can be realised in a data warehouse as snowflake.
+
+The repository_files entity captures detailed information about each file, including its language and size,
+ enabling analysis of programming language trends and codebase composition across different projects.
+Files are the source for forming the datasetы. 
+
+This  schema supports temporal analysis through comprehensive timestamp 
+tracking across multiple entities (created_at, updated_at, pushed_at), allowing researchers
+ to study project development patterns and community engagement over time.
+
+The schema's design facilitates common analytical queries about project health, 
+community engagement, and development patterns, but it may not fully address real-time collaboration 
+features or complex code dependency relationships between repositories.
+
+The inclusion of licensing information and visibility flags helps researchers understand open-source 
+licensing patterns and project accessibility, though it doesn't capture the full 
+complexity of license compliance and dependencies.
+
+The schema's modular design allows for future extensions to accommodate new GitHub 
+features or additional metadata, while maintaining backward compatibility with existing data and analysis workflows.
+
+For privacy and security considerations, the schema implements anonymization for user-related data 
+(anonymized_author_id, anonymized_username) while still maintaining the ability to track 
+individual contributions and participation patterns.
+
+
+github_open_source_schema:
+  repositories:
+    primary_attributes:
+      - repo_id: unique identifier
+      - name: repository name
+      - organization: repository owner organization
+      - description: repository description
+      - dates:
+          - created_at
+          - updated_at
+          - pushed_at
+    metadata_flags:
+      - is_fork
+      - is_archived
+    licensing:
+      - license_key
+      - license_name
+    metrics:
+      - stargazers_count
+      - watchers_count
+      - forks_count
+      - open_issues_count
+
+  repository_languages:
+    attributes:
+      - language_name
+      - bytes_used
+      - percentage_composition
+
+  commits:
+    attributes:
+      - commit_id
+      - repository_reference
+      - author_information:
+          - anonymized_author_id
+          - timestamp
+      - committer_information:
+          - anonymized_committer_id
+          - timestamp
+      - commit_message
+      - change_metrics:
+          - total_additions
+          - total_deletions
+          - total_changes
+
+  contributors:
+    details:
+      - contributor_id
+      - anonymized_username
+      - organization
+      - contribution_metrics:
+          - public_repositories_count
+          - contribution_count
+          - project_involvement_score
+
+  issues_and_pull_requests:
+    attributes:
+      - issue_id
+      - repository_reference
+      - title
+      - description
+      - state
+      - type: [issue, pull_request]
+      - timestamps:
+          - created_at
+          - closed_at
+      - labels
+      - anonymized_user_id
+
+  releases:
+    attributes:
+      - release_id
+      - repository_reference
+      - tag_name
+      - release_name
+      - flags:
+          - draft
+          - prerelease
+      - timestamps:
+          - created_at
+          - published_at
+      - release_notes
+
+  repository_files:
+    attributes:
+      - file_id: unique identifier
+      - repository_id: parent repository reference
+      - path: file path within repository
+      - filename: file name
+      - extension: file extension
+      - size_bytes: file size
+      - language_detected: programming/markup language
+      - last_modified: timestamp      
